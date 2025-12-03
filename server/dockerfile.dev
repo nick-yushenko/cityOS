@@ -1,0 +1,24 @@
+# Dev dockerfile с hot reload
+FROM mcr.microsoft.com/dotnet/sdk:10.0
+
+WORKDIR /app
+
+# Копируем только файл проекта для восстановления зависимостей
+COPY ["CityOS.csproj", "./"]
+RUN dotnet restore "CityOS.csproj"
+
+# Остальные файлы будут монтироваться через volume из docker-compose.dev.yml
+# Это позволяет hot reload работать - изменения в коде сразу видны в контейнере
+
+# Настраиваем переменные окружения
+ENV ASPNETCORE_ENVIRONMENT=Development
+ENV ASPNETCORE_URLS=http://+:8080
+ENV DOTNET_USE_POLLING_FILE_WATCHER=true
+
+EXPOSE 8080
+
+# Используем dotnet watch для hot reload
+# --no-restore - не восстанавливать пакеты при каждом изменении (быстрее)
+# --no-build - можно добавить для еще большей скорости, но тогда нужно вручную пересобирать
+ENTRYPOINT ["dotnet", "watch", "run", "--no-restore", "--urls", "http://0.0.0.0:8080"]
+

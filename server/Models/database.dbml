@@ -1,0 +1,87 @@
+Table city {
+  id int [pk, increment, not null]
+  name varchar(255) [not null]
+  code varchar(50) // ОКТМО/ОКАТО или внутренний код
+}
+
+// Новый уровень: сам бюджет города на год
+Table budget {
+  id int [pk, increment, not null]
+  city_id int [not null] // Город
+  year int [not null] // Год бюджета
+  name varchar(255) // Например: "Бюджет 2025 года"
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  indexes {
+    (city_id, year) [unique, name: 'ux_budget_city_year'] // один бюджет на город+год
+  }
+}
+
+// Теперь ревизия привязана к бюджету, а не напрямую к городу
+Table budget_revision {
+  id int [pk, increment, not null]
+  budget_id int [not null] // Ссылка на бюджет
+  name varchar(255) // Описание редакции, если есть
+  revision_date date // Дата утверждения/редакции, если есть
+}
+
+Table data_source {
+  id int [pk, increment, not null]
+  city_id int [not null] // Для какого города этот источник (можно оставить так)
+  dataset_kind varchar(50) [not null, note: 'Тип набора: PLAN_INCOME или EXECUTION_INCOME и т.п.']
+  source_url text [not null, note: 'Прямая ссылка на скачивание архива с данными']
+  file_type varchar(10) [not null, note: 'csv / xlsx / zip (архив, внутри csv/xlsx)']
+  description text
+  is_active boolean [not null, default: true]
+  last_loaded_at timestamp
+  last_checksum varchar(255)
+}
+
+Table income_source {
+  id int [pk, increment, not null]
+  name varchar(255) [not null] // Наименование дохода
+  external_code varchar(100)
+  description text
+}
+
+Table income_plan {
+  id int [pk, increment, not null]
+  revision_id int [not null] // Редакция бюджета
+  income_source_id int [not null]
+  value decimal(18,2) [not null]
+  share_percent decimal(7,4)
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  indexes {
+    (revision_id, income_source_id) [unique, name: 'ux_budget_income_revision_source']
+  }
+}
+
+Table income_execution {
+  id int [pk, increment, not null]
+  revision_id int [not null]
+  income_source_id int [not null]
+  report_period date [not null]
+  value decimal(18,2) [not null]
+  execution_percent decimal(7,4)
+  created_at timestamp [default: `now()`]
+  updated_at timestamp [default: `now()`]
+
+  indexes {
+    (revision_id, income_source_id, report_period) [unique, name: 'ux_execution_revision_source_period']
+  }
+}
+
+// Связи
+Ref: budget.city_id > city.id
+Ref: budget_revision.budget_id > budget.id
+
+Ref: income_plan.revision_id > budget_revision.id
+Ref: income_plan.income_source_id > income_source.id
+
+Ref: income_execution.revision_id > budget_revision.id
+Ref: income_execution.income_source_id > income_source.id
+
+Ref: data_source.city_id > city.id

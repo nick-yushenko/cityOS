@@ -1,0 +1,37 @@
+services:
+  db:
+    image: postgres:16
+    container_name: cityos_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: cityos_dev
+      POSTGRES_PASSWORD: cityos_dev
+      POSTGRES_DB: cityos
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cityos_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: ./server
+      dockerfile: dockerfile
+    container_name: cityos_api
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Development"
+      # коннекшн-строка, которую считает Program.cs
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=cityos;Username=cityos_dev;Password=cityos_dev"
+    ports:
+      - "5000:8080"
+    # если сильно нужно, можно добавить wait-for-it или healthchecks для db
+
+volumes:
+  postgres_data:

@@ -1,0 +1,64 @@
+# CityOS
+##  Структура БД
+https://dbdiagram.io/d/CityOS-6929a34ed6676488bacd1110
+
+## Источник данных доходов бюджета 
+https://data.gov.spb.ru/irsi/7830002430-Struktura-dohodov/structure_version/392/?page=1&budget=&per_page=50
+
+https://data.gov.spb.ru/irsi/7830002430-Ispolnenie-struktury-dohodov/structure_version/389/
+
+
+## Запуск бекенда в Docker
+
+### Режим разработки (с Hot Reload) 🔥
+
+Рекомендуется для разработки - изменения кода применяются автоматически без перезапуска контейнера.
+
+```bash
+# Запустить все сервисы с hot reload
+docker-compose -f docker-compose.dev.yml up -d --build
+
+# Просмотр логов (видно, как dotnet watch перезапускает приложение при изменениях)
+docker-compose -f docker-compose.dev.yml logs -f api
+
+# Остановка
+docker-compose -f docker-compose.dev.yml down
+```
+
+**Примечание**: При изменении файлов `.cs` в папке `server/`, приложение автоматически перезапустится. Hot reload работает благодаря `dotnet watch`.
+
+### Production режим
+
+```bash
+# Запустить все сервисы (API + PostgreSQL)
+docker-compose up -d --build
+
+# Просмотр логов
+docker-compose logs -f api
+
+# Остановка
+docker-compose down
+```
+
+### Параметры подключения к БД
+
+- **Host**: `localhost`
+- **Port**: `5432`
+- **Database**: `cityos`
+- **Username**: `cityos_dev`
+- **Password**: `cityos_dev`
+
+### Доступные сервисы
+
+- **API**: http://localhost:5000
+- **PostgreSQL**: localhost:5432
+
+### Обновление БД после обновление моделей
+
+```bash
+cd server 
+
+dotnet ef migrations add <MigrationName>
+
+dotnet ef database update
+```
