@@ -31,8 +31,8 @@ client/yarn-error.log*
 client/pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-client/.env*
-!client/.env.example
+# client/.env*
+# !client/.env.example
 
 # vercel
 client/.vercel
