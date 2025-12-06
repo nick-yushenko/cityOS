@@ -1,3 +1,4 @@
+import { createDeduplicated } from "../lib/createDeduplicated";
 import { API_BASE_URL } from "./config";
 import { ApiOptions } from "./types";
 
@@ -14,19 +15,33 @@ function buildQuery(params?: ApiOptions["params"]): string {
   return qs ? `?${qs}` : "";
 }
 
-export async function apiFetch<T>(path: string, options: ApiOptions = {}): Promise<T> {
-  const { method = "GET", params, body } = options;
+const deduplicatedFetch = createDeduplicated(async (url: string, options: RequestInit) => {
+  return fetch(url, options);
+});
 
-  const query = buildQuery(params);
-  const url = `${API_BASE_URL}${path}${query}`;
+export const apiFetch = async <T>(path: string, options: ApiOptions = {}): Promise<T> => {
+  const { method = "GET", params, body, force = false } = options;
 
-  const res = await fetch(url, {
+  const baseOptions: RequestInit = {
     method,
     headers: {
       "Content-Type": "application/json",
     },
-    body: method === "GET" ? undefined : JSON.stringify(body),
-  });
+  };
+  const query = buildQuery(params);
+  const url = `${API_BASE_URL}${path}${query}`;
+
+  let res: Response;
+  if (method === "GET" && !force) {
+    res = await deduplicatedFetch(url, baseOptions);
+    // Клонируем ответ чтобы избежать проблем с замыканием Promise<Response>
+    res = await res.clone();
+  } else {
+    res = await fetch(url, {
+      ...baseOptions,
+      body: method === "GET" ? undefined : JSON.stringify(body),
+    });
+  }
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -35,4 +50,4 @@ export async function apiFetch<T>(path: string, options: ApiOptions = {}): Promi
   }
 
   return (await res.json()) as T;
-}
+};

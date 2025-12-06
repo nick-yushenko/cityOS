@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { DataSource, DataSourcePayload } from "./types";
 import { addSource, deleteSource, getSources, updateSource } from "./api";
+import { parseApiError } from "@/shared/api/error-parser";
 
 interface DataSourceState {
   sourcesById: Record<number, DataSource>;
@@ -29,10 +30,18 @@ export const useDataSourceStore = create<DataSourceState>()((set) => ({
     });
   },
   addSource: async (source: DataSourcePayload) => {
-    const newSource: DataSource = await addSource(source);
-    set((state) => ({
-      sourcesById: { ...state.sourcesById, [newSource.id]: newSource },
-    }));
+    set({ loading: true, error: null });
+    try {
+      const newSource: DataSource = await addSource(source);
+      set((state) => ({
+        sourcesById: { ...state.sourcesById, [newSource.id]: newSource },
+        loading: false,
+        error: null,
+      }));
+    } catch (err) {
+      const errorMessage = parseApiError(err);
+      set({ loading: false, error: errorMessage });
+    }
   },
 
   updateSource: async (id: number, source: DataSourcePayload) => {

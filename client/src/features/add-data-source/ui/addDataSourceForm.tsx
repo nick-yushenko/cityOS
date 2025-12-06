@@ -1,38 +1,23 @@
 "use client";
 
 import { Button } from "@/shared/ui/button";
+import { CheckboxField } from "@/shared/ui/checkbox";
+import { InputField } from "@/shared/ui/input-field";
+import { SelectField } from "@/shared/ui/select-field";
 import { AddDataSourceFormValues, addDataSourceSchema } from "../lib/validation";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDataSourceStore } from "@/entities/data-source/model/store";
-import {
-  Alert,
-  Box,
-  Checkbox,
-  FormControl,
-  FormControlLabel,
-  FormHelperText,
-  InputLabel,
-  MenuItem,
-  Select,
-  TextField,
-} from "@mui/material";
+import { Alert, Box } from "@mui/material";
 import { useState } from "react";
 import { useCitiesView } from "@/entities/city/model/selectors";
+import { CitySelect } from "@/entities/city/ui/city-select";
 
 export const AddDataSourceForm: React.FC = () => {
-  const cities = useCitiesView();
-
   const { addSource, loading, error } = useDataSourceStore();
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
-  const {
-    register,
-    reset,
-    handleSubmit,
-    control,
-    formState: { errors },
-  } = useForm<AddDataSourceFormValues>({
+  const { reset, handleSubmit, control } = useForm<AddDataSourceFormValues>({
     resolver: zodResolver(addDataSourceSchema),
     defaultValues: {
       name: "",
@@ -53,11 +38,13 @@ export const AddDataSourceForm: React.FC = () => {
       description: values.description,
       sourceUrl: values.sourceUrl,
       datasetKind: values.datasetKind,
-      fileType: values.fileType,
+      fileType: "",
       isActive: true,
     });
 
-    if (!error) {
+    // Получаем актуальное значение error из store, так как компонент еще не перерендерился
+    const currentError = useDataSourceStore.getState().error;
+    if (!currentError) {
       reset();
       setSuccessMessage("Источник данных успешно добавлен");
     }
@@ -68,78 +55,19 @@ export const AddDataSourceForm: React.FC = () => {
       onSubmit={handleSubmit(onSubmit)}
       sx={{ mb: 4, display: "flex", flexDirection: "column", gap: 2, width: "100%" }}
     >
-      <TextField
-        label="Название"
-        {...register("name")}
-        error={!!errors.name}
-        helperText={errors.name?.message}
-      />
-      <TextField
-        label="Описание"
-        {...register("description")}
-        error={!!errors.description}
-        helperText={errors.description?.message}
-      />
+      <InputField name="name" control={control} label="Название" />
+      <InputField name="description" control={control} label="Описание" />
 
-      <Controller
-        name="cityId"
-        control={control}
-        render={({ field }) => (
-          <FormControl fullWidth error={!!errors.cityId}>
-            <InputLabel id="city-select-label">Город</InputLabel>
+      <CitySelect name="cityId" control={control} label="Город" />
 
-            <Select
-              labelId="city-select-label"
-              label="Город"
-              value={field.value}
-              onChange={field.onChange}
-            >
-              {cities.map((city) => (
-                <MenuItem key={city.id} value={city.id}>
-                  {city.name}
-                </MenuItem>
-              ))}
-            </Select>
+      <InputField name="datasetKind" control={control} label="Тип данных" />
+      <InputField name="sourceUrl" control={control} label="URL" />
+      <InputField name="fileType" control={control} label="Тип файла" />
 
-            <FormHelperText>{errors.cityId?.message}</FormHelperText>
-          </FormControl>
-        )}
-      />
-
-      <TextField
-        label="Тип данных"
-        {...register("datasetKind")}
-        error={!!errors.datasetKind}
-        helperText={errors.datasetKind?.message}
-      />
-      <TextField
-        label="URL"
-        {...register("sourceUrl")}
-        error={!!errors.sourceUrl}
-        helperText={errors.sourceUrl?.message}
-      />
-      <TextField
-        label="Тип файла"
-        {...register("fileType")}
-        error={!!errors.fileType}
-        helperText={errors.fileType?.message}
-      />
-
-      <Controller
-        name="isActive"
-        control={control}
-        render={({ field }) => (
-          <FormControlLabel
-            label="Активный источник"
-            control={
-              <Checkbox checked={field.value} onChange={(e, checked) => field.onChange(checked)} />
-            }
-          />
-        )}
-      />
+      <CheckboxField name="isActive" control={control} label="Активный источник" />
 
       {error && (
-        <Alert severity="error" variant="outlined">
+        <Alert severity="error" variant="outlined" sx={{ whiteSpace: "pre-line" }}>
           {error}
         </Alert>
       )}
