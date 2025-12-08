@@ -17,6 +17,7 @@
     "@mui/icons-material": "^7.3.5",
     "@mui/material": "^7.3.5",
     "@mui/material-nextjs": "^7.3.5",
+    "@mui/x-data-grid": "^8.21.0",
     "classnames": "^2.5.1",
     "next": "16.0.5",
     "react": "19.2.0",

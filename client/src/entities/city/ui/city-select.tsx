@@ -1,13 +1,14 @@
 "use client";
 
 import { SelectField } from "@/shared/ui/select-field";
-import { Control, FieldValues } from "react-hook-form";
-import { useCitiesView } from "../model/selectors";
-import { useCityStore } from "../model/store";
-import { useEffect, useMemo } from "react";
+import { Control } from "react-hook-form";
+import { useCitiesView } from "@/entities/city/model/selectors";
+import { useCityStore } from "@/entities/city/model/store";
+import { useEffect } from "react";
 
 type CitySelectProps = {
   name: string;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   control: Control<any>;
   label: string;
 };

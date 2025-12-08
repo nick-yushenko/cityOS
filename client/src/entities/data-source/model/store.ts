@@ -11,7 +11,7 @@ interface DataSourceState {
   loading: boolean;
   error: string | null;
 
-  loadSources: () => Promise<void>;
+  loadDataSources: () => Promise<void>;
   addSource: (source: DataSourcePayload) => Promise<void>;
   updateSource: (id: number, source: DataSourcePayload) => Promise<void>;
   deleteSource: (id: number) => Promise<void>;
@@ -23,10 +23,14 @@ export const useDataSourceStore = create<DataSourceState>()((set) => ({
   loading: false,
   error: null,
 
-  loadSources: async () => {
+  loadDataSources: async () => {
+    set({ loading: true, error: null });
+
     const sources: DataSource[] = await getSources();
     set({
       sourcesById: Object.fromEntries(sources.map((s) => [s.id, s])),
+      loading: false,
+      error: null,
     });
   },
   addSource: async (source: DataSourcePayload) => {

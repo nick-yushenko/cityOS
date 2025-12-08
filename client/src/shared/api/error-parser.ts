@@ -26,7 +26,7 @@ export function parseApiError(error: unknown): string {
         const errorMessages: string[] = [];
         Object.entries(errorData.errors).forEach(([field, messages]) => {
           messages.forEach((msg) => {
-            errorMessages.push(`- ${msg}`);
+            errorMessages.push(`${field}: ${msg}`);
           });
         });
         return `Возникла ошибка:\n${errorMessages.join("\n")}`;

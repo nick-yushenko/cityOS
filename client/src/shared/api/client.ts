@@ -1,4 +1,4 @@
-import { createDeduplicated } from "../lib/createDeduplicated";
+import { createDeduplicated } from "../lib/create-deduplicated";
 import { API_BASE_URL } from "./config";
 import { ApiOptions } from "./types";
 

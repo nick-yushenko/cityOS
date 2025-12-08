@@ -3,14 +3,12 @@
 import { Button } from "@/shared/ui/button";
 import { CheckboxField } from "@/shared/ui/checkbox";
 import { InputField } from "@/shared/ui/input-field";
-import { SelectField } from "@/shared/ui/select-field";
 import { AddDataSourceFormValues, addDataSourceSchema } from "../lib/validation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDataSourceStore } from "@/entities/data-source/model/store";
 import { Alert, Box } from "@mui/material";
 import { useState } from "react";
-import { useCitiesView } from "@/entities/city/model/selectors";
 import { CitySelect } from "@/entities/city/ui/city-select";
 
 export const AddDataSourceForm: React.FC = () => {
@@ -53,7 +51,7 @@ export const AddDataSourceForm: React.FC = () => {
     <Box
       component="form"
       onSubmit={handleSubmit(onSubmit)}
-      sx={{ mb: 4, display: "flex", flexDirection: "column", gap: 2, width: "100%" }}
+      sx={{ display: "flex", flexDirection: "column", gap: 2 }}
     >
       <InputField name="name" control={control} label="Название" />
       <InputField name="description" control={control} label="Описание" />

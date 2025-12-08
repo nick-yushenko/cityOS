@@ -1,8 +1,11 @@
+"use client";
+
 /**
  * Создает дедуплицированную версию асинхронной функции.
  * Если функция вызывается с одинаковыми аргументами несколько раз до завершения первого вызова,
  * все вызовы получат один и тот же Promise, и реальная функция выполнится только один раз.
  */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const createDeduplicated = <Args extends any[], R>(fn: (...args: Args) => Promise<R>) => {
   const cache: Record<string, Promise<R>> = {};
 
@@ -12,7 +15,7 @@ export const createDeduplicated = <Args extends any[], R>(fn: (...args: Args) =>
       cache[key] = fn(...args).finally(() => {
         delete cache[key];
       });
-    }
+    } else console.log("cache hit", key);
     return cache[key];
   };
 };

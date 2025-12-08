@@ -1,29 +1,46 @@
 "use client";
 
 import { create } from "zustand";
-import { getCities } from "./api";
-import { City } from "./types";
+import { addCity, getCities } from "./api";
+import { City, CityPayload } from "./types";
+import { parseApiError } from "@/shared/api/error-parser";
 
 interface CityState {
   citiesById: Record<number, City>;
 
-  isLoaded: boolean;
+  loading: boolean;
+  error: string | null;
+
   loadCities: () => Promise<void>;
+  addCity: (city: CityPayload) => Promise<void>;
 }
 
-export const useCityStore = create<CityState>()((set, get) => ({
+export const useCityStore = create<CityState>()((set) => ({
   citiesById: {},
-  isLoaded: false,
-  loadCities: async (options: { force?: boolean } = { force: false }) => {
-    const { force } = options;
-    if (!force && get().isLoaded) {
-      return;
-    }
+  loading: false,
+  error: null,
+
+  loadCities: async () => {
+    set({ loading: true });
     const cities = await getCities();
 
     set({
       citiesById: Object.fromEntries(cities.map((city) => [city.id, city])),
-      isLoaded: true,
+      loading: false,
     });
+  },
+
+  addCity: async (city: CityPayload) => {
+    set({ loading: true });
+    try {
+      const newCity: City = await addCity(city);
+      set((state) => ({
+        citiesById: { ...state.citiesById, [newCity.id]: newCity },
+        loading: false,
+      }));
+    } catch (error) {
+      const errorMessage = parseApiError(error);
+      set({ loading: false, error: errorMessage });
+    }
   },
 }));
