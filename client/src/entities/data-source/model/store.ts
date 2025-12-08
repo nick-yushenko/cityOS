@@ -3,6 +3,7 @@
 import { create } from "zustand";
 import { DataSource, DataSourcePayload } from "./types";
 import { addSource, deleteSource, getSources, updateSource } from "./api";
+import { parseApiError } from "@/shared/api/error-parser";
 
 interface DataSourceState {
   sourcesById: Record<number, DataSource>;
@@ -10,7 +11,7 @@ interface DataSourceState {
   loading: boolean;
   error: string | null;
 
-  loadSources: () => Promise<void>;
+  loadDataSources: () => Promise<void>;
   addSource: (source: DataSourcePayload) => Promise<void>;
   updateSource: (id: number, source: DataSourcePayload) => Promise<void>;
   deleteSource: (id: number) => Promise<void>;
@@ -22,17 +23,29 @@ export const useDataSourceStore = create<DataSourceState>()((set) => ({
   loading: false,
   error: null,
 
-  loadSources: async () => {
+  loadDataSources: async () => {
+    set({ loading: true, error: null });
+
     const sources: DataSource[] = await getSources();
     set({
       sourcesById: Object.fromEntries(sources.map((s) => [s.id, s])),
+      loading: false,
+      error: null,
     });
   },
   addSource: async (source: DataSourcePayload) => {
-    const newSource: DataSource = await addSource(source);
-    set((state) => ({
-      sourcesById: { ...state.sourcesById, [newSource.id]: newSource },
-    }));
+    set({ loading: true, error: null });
+    try {
+      const newSource: DataSource = await addSource(source);
+      set((state) => ({
+        sourcesById: { ...state.sourcesById, [newSource.id]: newSource },
+        loading: false,
+        error: null,
+      }));
+    } catch (err) {
+      const errorMessage = parseApiError(err);
+      set({ loading: false, error: errorMessage });
+    }
   },
 
   updateSource: async (id: number, source: DataSourcePayload) => {

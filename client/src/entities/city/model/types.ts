@@ -8,3 +8,5 @@ export interface City {
   dataSources: DataSource[];
   budgets: Budget[];
 }
+
+export type CityPayload = Omit<City, "id" | "dataSources" | "budgets">;

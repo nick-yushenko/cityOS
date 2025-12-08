@@ -1,19 +1,10 @@
 "use client";
 
 import { Container, Typography, Box } from "@mui/material";
-import { useCityStore } from "@/entities/city/model/store";
-import { useEffect } from "react";
-import { useCitiesView } from "@/entities/city/model/selectors";
-import { AddDataSourceForm } from "@/features/add-data-source/ui/addDataSourceForm";
+import { CityTable } from "@/entities/city/ui/city-table";
+import { DataSourceTable } from "@/entities/data-source/ui/data-source-table";
 
 export default function Page() {
-  const loadCities = useCityStore((s) => s.loadCities);
-  const cities = useCitiesView();
-
-  useEffect(() => {
-    loadCities();
-  }, [loadCities]);
-
   return (
     <Container maxWidth="xl">
       <Box sx={{ mb: 4 }}>
@@ -21,19 +12,8 @@ export default function Page() {
           Бюджет города
         </Typography>
 
-        <h1 style={{ marginBottom: 16 }}>Источники данных</h1>
-
-        <AddDataSourceForm />
-        {cities.map((city) => (
-          <div key={city.id}>
-            <h2>{city.name}</h2>
-            <ul>
-              {city.dataSources.map((ds) => (
-                <li key={ds.id}>{ds.datasetKind}</li>
-              ))}
-            </ul>
-          </div>
-        ))}
+        <CityTable />
+        <DataSourceTable />
       </Box>
     </Container>
   );
