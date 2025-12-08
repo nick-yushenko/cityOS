@@ -35,4 +35,14 @@ namespace CityOS.Models
         public virtual ICollection<Budget> Budgets { get; set; } = new List<Budget>();
         public virtual ICollection<DataSource> DataSources { get; set; } = new List<DataSource>();
     }
+
+    /// <summary>
+    /// DTO для частичного обновления города (PATCH)
+    /// Все поля опциональны для частичного обновления
+    /// </summary>
+    public class UpdateCityPayload
+    {
+        public string? Name { get; set; }
+        public string? Code { get; set; }
+    }
 }

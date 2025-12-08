@@ -42,10 +42,10 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
-    
+
     var maxRetries = 10;
     var delay = TimeSpan.FromSeconds(3);
-    
+
     for (int i = 0; i < maxRetries; i++)
     {
         try
@@ -75,42 +75,5 @@ app.MapControllers();
 // Простейший API
 app.MapGet("/ping", () => new { ok = true, time = DateTime.UtcNow });
 
-// API для получения списка городов
-app.MapGet("/api/cities", async (AppDbContext db) =>
-{
-    var cities = await db.Cities
-        .Include(c => c.Budgets)
-        .Include(c => c.DataSources)
-        .Select(c => new
-        {
-            id = c.Id,
-            name = c.Name,
-            code = c.Code,
-            budgets = c.Budgets.Select(b => new
-            {
-                id = b.Id,
-                cityId = b.CityId,
-                year = b.Year,
-                name = b.Name,
-                createdAt = b.CreatedAt,
-                updatedAt = b.UpdatedAt
-            }).ToList(),
-            dataSources = c.DataSources.Select(ds => new
-            {
-                id = ds.Id,
-                cityId = ds.CityId,
-                datasetKind = ds.DatasetKind,
-                sourceUrl = ds.SourceUrl,
-                fileType = ds.FileType,
-                description = ds.Description,
-                isActive = ds.IsActive,
-                lastLoadedAt = ds.LastLoadedAt,
-                lastChecksum = ds.LastChecksum
-            }).ToList()
-        })
-        .ToListAsync();
-    
-    return Results.Ok(cities);
-});
 
 app.Run();
