@@ -9,6 +9,13 @@ public class AppDbContext : DbContext
         : base(options) { }
 
     public DbSet<City> Cities => Set<City>();
+
+    public DbSet<BIEntity> BIEntities => Set<BIEntity>();
+    public DbSet<BIField> BIFields => Set<BIField>();
+    public DbSet<BIRelation> BIRelations => Set<BIRelation>();
+    public DbSet<BIEntityRow> BIEntityRows => Set<BIEntityRow>();
+    
+
     public DbSet<Budget> Budgets => Set<Budget>();
     public DbSet<BudgetRevision> BudgetRevisions => Set<BudgetRevision>();
     public DbSet<IncomeSource> IncomeSources => Set<IncomeSource>();
